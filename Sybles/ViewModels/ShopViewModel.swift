@@ -3,7 +3,22 @@ import SwiftUI
 class ShopViewModel: ObservableObject {
     @Published var selectedCategory: ShopItem.Category = .powerUp
     @Published var purchaseMessage: String? = nil
-    @Published var activePowerUps: [String] = []
+    @Published var activePowerUps: [String] = [] {
+        didSet { savePowerUps() }
+    }
+
+    init() {
+        if let data = UserDefaults.standard.data(forKey: "activePowerUps"),
+           let decoded = try? JSONDecoder().decode([String].self, from: data) {
+            activePowerUps = decoded
+        }
+    }
+
+    private func savePowerUps() {
+        if let data = try? JSONEncoder().encode(activePowerUps) {
+            UserDefaults.standard.set(data, forKey: "activePowerUps")
+        }
+    }
 
     func purchase(item: ShopItem, playerData: PlayerData) -> Bool {
         // Check if already owned (avatars/themes)
